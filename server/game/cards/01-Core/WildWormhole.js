@@ -3,6 +3,7 @@ const Card = require('../../Card.js');
 class WildWormhole extends Card {
     setupCardAbilities(ability) {
         this.play({
+            condition: context => context.player.deck.length > 0,
             effect: 'play the top card of their deck{1}{2}',
             effectArgs: context => context.player.deck.length && context.player.checkRestrictions('play', context.game.getFrameworkContext()) ?
                 [': ', context.player.deck[0]] : [],
