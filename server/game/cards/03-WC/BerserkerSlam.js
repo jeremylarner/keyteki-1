@@ -9,7 +9,7 @@ class BerserkerSlam extends Card {
                 gameAction: ability.actions.dealDamage({ amount: 4 })
             },
             then: {
-                condition: context => context.preThenEvent.destroyed && !context.preThenEvent.redirectApplied,
+                condition: context => context.preThenEvent.destroyed,
                 message: '{0} uses {1} to cause {3} to lose 1 aember',
                 messageArgs: context => [context.preThenEvent.card.controller],
                 gameAction: ability.actions.loseAmber(context => ({
