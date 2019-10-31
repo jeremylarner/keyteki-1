@@ -11,6 +11,6 @@ class AmberspineMongrel extends Card {
     }
 }
 
-AmberspineMongrel.id = 'æmberspine-mongrel';
+AmberspineMongrel.id = 'æmberspine-mongrel2';
 
 module.exports = AmberspineMongrel;
