@@ -26,7 +26,8 @@ describe('Archimedes', function() {
             it('should move only immediate neighbors to archive on a board wipe', function() {
                 this.player1.play(this.gatewayToDis);
 
-                // an interrupt
+                expect(this.player1).toHavePrompt('Triggered Abilities');
+                expect(this.player1).toBeAbleToSelect(this.gub);
                 this.player1.clickCard(this.gub);
 
                 expect(this.streke.location).toBe('archives');
@@ -89,8 +90,9 @@ describe('Archimedes', function() {
                 });
             });
 
-            xit('should archive only immediate neighbors', function() {
+            it('should archive only immediate neighbors', function() {
                 this.player1.play(this.whistlingDarts);
+                this.player1.clickCard(this.helperBot);
 
                 expect(this.jargogle.location).toBe('play area');
                 expect(this.tantadlin.location).toBe('play area');
@@ -102,9 +104,10 @@ describe('Archimedes', function() {
                 expect(this.harlandMindlock.location).toBe('archives');
             });
 
-            xit('should archive only immediate neighbors when archimedes dies', function() {
+            it('should archive only immediate neighbors when archimedes dies', function() {
                 this.player1.play(this.boobyTrap);
                 this.player1.clickCard(this.archimedes);
+                this.player1.clickCard(this.helperBot);
 
                 expect(this.jargogle.location).toBe('play area');
                 expect(this.tantadlin.location).toBe('play area');

@@ -19,7 +19,7 @@ class Player extends GameObject {
         this.deckName = '';
         this.deckCards = [];
         this.deckUuid = '';
-        this.deckSet = '';
+        this.deckSet = 0;
         this.discard = [];
         this.purged = [];
         this.archives = [];
@@ -433,6 +433,10 @@ class Player extends GameObject {
         this.promptState.clearSelectedCards();
     }
 
+    getSelectableCards() {
+        return this.promptState.selectableCards;
+    }
+
     setSelectableCards(cards) {
         this.promptState.setSelectableCards(cards);
     }
@@ -572,7 +576,10 @@ class Player extends GameObject {
                     let max = Math.min(modifiedCost, source.tokens.amber);
                     let min = Math.max(0, modifiedCost - this.amber - totalAvailable + source.tokens.amber);
                     this.game.promptWithHandlerMenu(this, {
-                        activePromptTitle: { text: 'How much amber do you want to use from {{card}}', values: { card: source.name } },
+                        activePromptTitle: {
+                            text: 'How much amber do you want to use from {{card}}',
+                            values: { card: source.name }
+                        },
                         source: source,
                         choices: _.range(min, max + 1),
                         choiceHandler: choice => {
@@ -591,23 +598,25 @@ class Player extends GameObject {
                 choices: unforgedKeys,
                 choiceHandler: key => {
                     this.game.queueSimpleStep(() => {
-                        this.modifyAmber(-modifiedCost);
-                        if(this.anyEffect('forgeAmberGainedByOpponent')) {
-                            this.game.actions.gainAmber({ amount: cost }).resolve(this.opponent, this.game.getFrameworkContext());
-                        }
-
-                        this.keys[key.text.toLowerCase()] = true;
-                        this.keyForged.push(key.text.toLowerCase());
-                        this.game.addMessage('{0} forges the {1}, paying {2} amber', this.game.activePlayer, `forgedkey${key.text.toLowerCase()}`, modifiedCost);
+                        this.finalizeForge(key.text.toLowerCase(), modifiedCost, cost);
                     });
                 }
             });
         } else {
-            let color = unforgedKeys.shift().text.toLowerCase();
-            this.keys[color] = true;
-            this.keyForged.push(color);
-            this.game.addMessage('{0} forges the {1}, paying {2} amber', this.game.activePlayer, `forgedkey${color}`, modifiedCost);
+            this.finalizeForge(unforgedKeys.shift().text.toLowerCase(), modifiedCost, cost);
         }
+    }
+
+    finalizeForge(key, modifiedCost, cost) {
+        this.modifyAmber(-modifiedCost);
+
+        if(this.anyEffect('forgeAmberGainedByOpponent')) {
+            this.game.actions.gainAmber({ amount: cost }).resolve(this.opponent, this.game.getFrameworkContext());
+        }
+
+        this.keys[key] = true;
+        this.keyForged.push(key);
+        this.game.addMessage('{0} forges the {1}, paying {2} amber', this.game.activePlayer, `forgedkey${key}`, modifiedCost);
     }
 
     unforgeKey(choices) {
@@ -652,10 +661,6 @@ class Player extends GameObject {
             keys: this.keys,
             houses: this.houses
         };
-    }
-
-    getRingSelectionState(ring) {
-        return this.promptState.getRingSelectionState(ring);
     }
 
     /**

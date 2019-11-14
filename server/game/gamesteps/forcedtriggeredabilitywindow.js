@@ -41,6 +41,12 @@ class ForcedTriggeredAbilityWindow extends BaseStep {
             return true;
         }
 
+        let autoResolveChoice = this.choices.find(context => context.ability.autoResolve);
+        if(autoResolveChoice) {
+            this.resolveAbility(autoResolveChoice);
+            return false;
+        }
+
         this.noOptionalChoices = this.choices.every(context => !context.ability.optional);
         if(this.noOptionalChoices && (this.choices.length === 1 || this.currentPlayer.optionSettings.orderForcedAbilities)) {
             this.resolveAbility(this.choices[0]);
@@ -122,8 +128,12 @@ class ForcedTriggeredAbilityWindow extends BaseStep {
             }
 
             const generatingEffect = this.game.effectEngine.effects.find(effect =>
-                effect.effect.state && effect.effect.state[context.source.uuid] === context.ability);
-            return generatingEffect.source.name;
+                effect.effect.getValue(context.source) === context.ability);
+            if(generatingEffect) {
+                return generatingEffect.source.name;
+            }
+
+            return context.source.name;
         };
 
         let menuChoices = _.uniq(choices.map(context => getSourceName(context)));

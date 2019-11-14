@@ -2,35 +2,37 @@ const _ = require('underscore');
 const EventEmitter = require('events');
 const moment = require('moment');
 
-const Constants = require('../constants.js');
-const ChatCommands = require('./chatcommands.js');
-const GameChat = require('./gamechat.js');
-const EffectEngine = require('./effectengine.js');
-const Player = require('./player.js');
-const Spectator = require('./spectator.js');
-const AnonymousSpectator = require('./anonymousspectator.js');
-const GamePipeline = require('./gamepipeline.js');
+const Constants = require('../constants');
+const ChatCommands = require('./chatcommands');
+const GameChat = require('./gamechat');
+const EffectEngine = require('./effectengine');
+const Player = require('./player');
+const Spectator = require('./spectator');
+const AnonymousSpectator = require('./anonymousspectator');
+const GamePipeline = require('./gamepipeline');
 const SetupPhase = require('./gamesteps/setup/setupphase');
 const KeyPhase = require('./gamesteps/key/KeyPhase');
 const HousePhase = require('./gamesteps/house/HousePhase');
 const MainPhase = require('./gamesteps/main/MainPhase');
 const ReadyPhase = require('./gamesteps/ReadyPhase');
 const DrawPhase = require('./gamesteps/draw/drawphase');
-const SimpleStep = require('./gamesteps/simplestep.js');
-const MenuPrompt = require('./gamesteps/menuprompt.js');
-const HandlerMenuPrompt = require('./gamesteps/handlermenuprompt.js');
-const SelectCardPrompt = require('./gamesteps/selectcardprompt.js');
+const SimpleStep = require('./gamesteps/simplestep');
+const MenuPrompt = require('./gamesteps/menuprompt');
+const HandlerMenuPrompt = require('./gamesteps/handlermenuprompt');
+const SelectCardPrompt = require('./gamesteps/selectcardprompt');
+const OptionsMenuPrompt = require('./gamesteps/OptionsMenuPrompt');
 const GameWonPrompt = require('./gamesteps/GameWonPrompt');
 const GameActions = require('./GameActions');
 const Event = require('./Events/Event');
-const EventWindow = require('./Events/EventWindow.js');
+const EventWindow = require('./Events/EventWindow');
 const ThenEventWindow = require('./Events/ThenEventWindow');
-const AbilityResolver = require('./gamesteps/abilityresolver.js');
+const AbilityResolver = require('./gamesteps/abilityresolver');
 const SimultaneousEffectWindow = require('./gamesteps/SimultaneousEffectWindow');
-const AbilityContext = require('./AbilityContext.js');
+const AbilityContext = require('./AbilityContext');
 const MenuCommands = require('./MenuCommands');
-const TimeLimit = require('./TimeLimit.js');
+const TimeLimit = require('./TimeLimit');
 const PlainTextGameChatFormatter = require('./PlainTextGameChatFormatter');
+const CardVisibility = require('./CardVisibility');
 
 class Game extends EventEmitter {
     constructor(details, options = {}) {
@@ -71,6 +73,8 @@ class Game extends EventEmitter {
         this.activePlayer = null;
 
         this.cardData = options.cardData || [];
+
+        this.cardVisibility = new CardVisibility(this);
 
         _.each(details.players, player => {
             this.playersAndSpectators[player.user.username] = new Player(player.id, player.user, this.owner === player.user.username, this);
@@ -187,6 +191,15 @@ class Game extends EventEmitter {
         });
 
         return otherPlayer;
+    }
+
+    /**
+     * Returns the visitbility of the card for a given player.
+     * @param {Card} card
+     * @param {Player} player
+     */
+    isCardVisible(card, player) {
+        return this.cardVisibility.isVisible(card, player);
     }
 
     /**
@@ -467,7 +480,7 @@ class Game extends EventEmitter {
      * Prompts a player with a multiple choice menu
      * @param {Player} player
      * @param {Object} contextObj - the object which contains the methods that are referenced by the menubuttons
-     * @param {Object} properties - see menuprompt.js
+     * @param {Object} properties - see menuprompt
      */
     promptWithMenu(player, contextObj, properties) {
         this.queueStep(new MenuPrompt(this, player, contextObj, properties));
@@ -476,16 +489,25 @@ class Game extends EventEmitter {
     /**
      * Prompts a player with a multiple choice menu
      * @param {Player} player
-     * @param {Object} properties - see handlermenuprompt.js
+     * @param {Object} properties - see handlermenuprompt
      */
     promptWithHandlerMenu(player, properties) {
         this.queueStep(new HandlerMenuPrompt(this, this.activePlayer || player, properties));
     }
 
     /**
+     * Prompts a player with a dropdown options menu
+     * @param {Player} player
+     * @param {Object} properties - see handlermenuprompt
+     */
+    promptWithOptionsMenu(player, properties) {
+        this.queueStep(new OptionsMenuPrompt(this, this.activePlayer || player, properties));
+    }
+
+    /**
      * Prompts a player to click a card
      * @param {Player} player
-     * @param {Object} properties - see selectcardprompt.js
+     * @param {Object} properties - see selectcardprompt
      */
     promptForSelect(player, properties) {
         this.queueStep(new SelectCardPrompt(this, this.activePlayer, properties));
@@ -619,6 +641,7 @@ class Game extends EventEmitter {
         this.queueStep(new MainPhase(this));
         this.queueStep(new ReadyPhase(this));
         this.queueStep(new DrawPhase(this));
+        this.queueStep(new SimpleStep(this, () => this.raiseEndRoundEvent())),
         this.queueStep(new SimpleStep(this, () => this.beginRound()));
     }
 
@@ -643,7 +666,7 @@ class Game extends EventEmitter {
 
     /*
      * Resolves a card ability or ring effect
-     * @param {AbilityContext} context - see AbilityContext.js
+     * @param {AbilityContext} context - see AbilityContext
      * @returns {undefined}
      */
     resolveAbility(context) {
@@ -695,13 +718,13 @@ class Game extends EventEmitter {
         return this.queueStep(new EventWindow(this, events));
     }
 
-    openThenEventWindow(events) {
+    openThenEventWindow(events, checkState = true) {
         if(this.currentEventWindow) {
             if(!_.isArray(events)) {
                 events = [events];
             }
 
-            return this.queueStep(new ThenEventWindow(this, events));
+            return this.queueStep(new ThenEventWindow(this, events, checkState));
         }
 
         return this.openEventWindow(events);
@@ -769,12 +792,7 @@ class Game extends EventEmitter {
             player.cardsInPlay.push(card);
         }
 
-        _.each(card.abilities.persistentEffects, effect => {
-            if(effect.location !== 'any') {
-                card.removeEffectFromEngine(effect.ref);
-                effect.ref = card.addEffectToEngine(effect);
-            }
-        });
+        card.updateEffectContexts();
         this.queueSimpleStep(() => this.checkGameState(true));
     }
 
@@ -937,6 +955,12 @@ class Game extends EventEmitter {
             // check for any delayed effects which need to fire
             this.effectEngine.checkDelayedEffects(events);
         }
+    }
+
+    raiseEndRoundEvent() {
+        this.raiseEvent('onRoundEnded', {}, () => {
+            this.endRound();
+        });
     }
 
     endRound() {

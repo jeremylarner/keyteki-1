@@ -71,6 +71,10 @@ class ChatCommands {
 
         let deck = new Deck();
         let preparedCard = deck.createCard(player, card);
+        if(preparedCard) {
+            preparedCard.setupAbilities();
+            preparedCard.location = 'deck';
+        }
 
         preparedCard.applyAnyLocationPersistentEffects();
 
@@ -89,8 +93,7 @@ class ChatCommands {
         }
 
         const color = args[1] ? args[1] : Object.keys(player.keys).filter(key => !player.keys[key])[0];
-
-        this.game.addMessage('{0} uses the /forge command to forge the {1} key', player, color);
+        this.game.addMessage('{0} uses the /forge command to forge the {1} ', player, `forgedkey${color}`);
         player.keys[color] = true;
         player.keyForged.push(color);
     }
@@ -101,7 +104,7 @@ class ChatCommands {
         }
 
         const color = args[1] ? args[1] : Object.keys(player.keys).filter(key => player.keys[key])[0];
-        this.game.addMessage('{0} uses the /unforge command to unforge the {1} key', player, color);
+        this.game.addMessage('{0} uses the /unforge command to unforge the {1}', player, `unforgedkey${color}`);
         player.keys[color] = false;
         player.keyForged.splice(player.keyForged.findIndex(key => key === color), 1);
     }

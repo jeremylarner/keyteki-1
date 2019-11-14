@@ -110,7 +110,11 @@ class InnerCard extends React.Component {
 
         for(const [key, token] of Object.entries(card.tokens || {})) {
             counters.push({ name: key, count: token, fade: needsFade, shortName: this.shortNames[key],
-                showValue: ((token > 1) || !singleValueCounters.includes(key)) });
+                showValue: ((token > 1) || !singleValueCounters.includes(key)), broken: key === 'ward' && card.wardBroken });
+        }
+
+        if(card.pseudoDamage) {
+            counters.push({ name: 'damage', count: card.pseudoDamage, fade: true, showValue: true });
         }
 
         for(const upgrade of card.upgrades || []) {
@@ -277,6 +281,7 @@ class InnerCard extends React.Component {
             img={ this.imageUrl }
             language={ this.props.language }
             maverick={ !this.isFacedown() ? this.props.card.maverick : null }
+            anomaly={ !this.isFacedown() ? this.props.card.anomaly : null }
             amber={ !this.isFacedown() ? this.props.card.cardPrintedAmber : 0 }/>);
 
         let content = this.props.connectDragSource(
@@ -300,7 +305,7 @@ class InnerCard extends React.Component {
     }
 
     get imageUrl() {
-        let image = '/img/idbacks/cardback.jpg';
+        let image = this.props.cardBackUrl;
 
         if(!this.isFacedown()) {
             image = `/img/cards/${this.props.card.image}.png`;
@@ -356,6 +361,7 @@ InnerCard.displayName = 'Card';
 InnerCard.propTypes = {
     canDrag: PropTypes.bool,
     card: PropTypes.shape({
+        anomaly: PropTypes.string,
         attached: PropTypes.bool,
         baseStrength: PropTypes.number,
         childCards: PropTypes.array,
@@ -384,6 +390,7 @@ InnerCard.propTypes = {
         maverick: PropTypes.string,
         cardPrintedAmber: PropTypes.number
     }).isRequired,
+    cardBackUrl: PropTypes.string,
     className: PropTypes.string,
     connectDragPreview: PropTypes.func,
     connectDragSource: PropTypes.func,
