@@ -1,55 +1,36 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import CircleType from 'circletype';
 
-import AltCard from './AltCard';
 import CardImage from './CardImage';
 
-class CardZoom extends React.Component {
-    componentDidMount() {
-        if(this.idText) {
-            new CircleType(this.idText).radius(140);
-        }
+import './CardZoom.scss';
+
+const CardZoom = ({ card, cardName }) => {
+    if (!card) {
+        return null;
     }
 
-    componentDidUpdate() {
-        if(this.idText) {
-            new CircleType(this.idText).radius(140);
-        }
-    }
+    const size = card.type === 'decklist' ? 'x-large' : 'normal';
 
-    render() {
-        if(!this.props.card) {
-            return null;
-        }
-
-        return (
-            <div className='card-large vertical'>
-                { this.props.show &&
+    return (
+        <div className={`card-zoom ${size} vertical`}>
+            {
                 <div className='card-zoomed shadow'>
-                    { this.props.card.imageUrl ?
+                    {card.imageUrl ? (
                         <div className='card-zoomed shadow'>
-                            <img className='image-large img-responsive' src={ this.props.card.imageUrl }/>
+                            <img className={`image-zoom ${size} img-fluid`} src={card.imageUrl} />
                         </div>
-                        :
+                    ) : (
                         <div className='card-zoomed shadow'>
-                            <span className='card-name'>{ this.props.cardName }</span>
-                            <CardImage className='image-large img-responsive' img={ this.props.imageUrl } maverick={ this.props.card.maverick } anomaly={ this.props.card.anomaly } amber={ this.props.card.cardPrintedAmber }/>
-                            { this.props.card && <AltCard card={ this.props.card }/> }
+                            <span className='card-name'>{cardName}</span>
+                            <CardImage card={card} />
                         </div>
-                    }
+                    )}
                 </div>
-                }
-            </div>);
-    }
-}
+            }
+        </div>
+    );
+};
 
 CardZoom.displayName = 'CardZoom';
-CardZoom.propTypes = {
-    card: PropTypes.object,
-    cardName: PropTypes.string,
-    imageUrl: PropTypes.string,
-    show: PropTypes.bool
-};
 
 export default CardZoom;

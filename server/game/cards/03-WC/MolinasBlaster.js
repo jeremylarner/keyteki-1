@@ -5,16 +5,16 @@ class MolinasBlaster extends BlasterCard {
         this.reaction({
             when: {
                 onCardAttached: (event, context) =>
-                    event.card === context.source && event.parent.name === 'Armsmaster Molina' &&
+                    event.card === context.source &&
+                    event.parent.name === 'Armsmaster Molina' &&
                     event.context.player === event.card.controller
             },
-            gameAction: ability.actions.dealDamage({
-                amount: 3,
-                promptForSelect: {
-                    optional: true,
-                    cardType: 'creature'
-                }
-            })
+            target: {
+                optional: true,
+                mode: 'exactly',
+                cardType: 'creature',
+                gameAction: ability.actions.dealDamage({ amount: 3 })
+            }
         });
 
         this.setupBlasterCardAbilities(ability, 'Armsmaster Molina');

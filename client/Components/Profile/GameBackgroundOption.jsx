@@ -1,23 +1,28 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import { Col } from 'react-bootstrap';
+
+import './GameBackgroundOption.scss';
 
 function GameBackgroundOption(props) {
     let { name, label, imageUrl, selected, onSelect } = props;
 
     const handleClick = () => {
-        if(onSelect) {
+        if (onSelect) {
             onSelect(name);
         }
     };
 
     return (
-        <div className='col-sm-4' onClick={ handleClick }>
-            <img className={ classNames('img-responsive', { 'selected': selected }) } src={ imageUrl } />
-            <span className='bg-label'>{ label }</span>
-        </div>);
+        <Col sm={4} onClick={handleClick}>
+            <img className={classNames('img-fluid', { selected: selected })} src={imageUrl} />
+            <span className='bg-label'>{label}</span>
+        </Col>
+    );
 }
-GameBackgroundOption.propTypes = {
+
+GameBackgroundOption.propTypes = {
     imageUrl: PropTypes.string.isRequired,
     label: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,

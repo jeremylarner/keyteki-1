@@ -5,15 +5,16 @@ import classNames from 'classnames';
 class Counter extends React.Component {
     render() {
         let className = classNames('counter', this.props.name, {
-            'broken': this.props.broken,
-            'cancel': this.props.cancel,
+            broken: this.props.broken,
+            cancel: this.props.cancel,
             'fade-out': this.props.fade
         });
 
-        return (<div key={ this.props.name } className={ className }>
-            { this.props.shortName && <span>{ this.props.shortName }</span> }
-            { this.props.showValue && <span>{ this.props.value }</span> }
-        </div>);
+        return (
+            <div key={this.props.name} className={className}>
+                {this.props.showValue && <span>{this.props.value}</span>}
+            </div>
+        );
     }
 }
 
@@ -24,7 +25,6 @@ Counter.propTypes = {
     fade: PropTypes.bool,
     icon: PropTypes.string,
     name: PropTypes.string.isRequired,
-    shortName: PropTypes.string,
     showValue: PropTypes.bool,
     value: PropTypes.number
 };

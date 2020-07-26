@@ -4,19 +4,29 @@ const Actions = {
     // card actions
     addPowerCounter: (propertyFactory) => new GameActions.AddTokenAction(propertyFactory, 'power'),
     addDamageToken: (propertyFactory) => new GameActions.AddTokenAction(propertyFactory, 'damage'),
-    addDisruptionCounter: (propertyFactory) => new GameActions.AddTokenAction(propertyFactory, 'disruption'),
+    addDisruptionCounter: (propertyFactory) =>
+        new GameActions.AddTokenAction(propertyFactory, 'disruption'),
     addDoomCounter: (propertyFactory) => new GameActions.AddTokenAction(propertyFactory, 'doom'),
     addFuseCounter: (propertyFactory) => new GameActions.AddTokenAction(propertyFactory, 'fuse'),
     addGloryCounter: (propertyFactory) => new GameActions.AddTokenAction(propertyFactory, 'glory'),
-    addGrowthCounter: (propertyFactory) => new GameActions.AddTokenAction(propertyFactory, 'growth'),
+    addGrowthCounter: (propertyFactory) =>
+        new GameActions.AddTokenAction(propertyFactory, 'growth'),
+    addSchemeCounter: (propertyFactory) =>
+        new GameActions.AddTokenAction(propertyFactory, 'scheme'),
     addWardToken: (propertyFactory) => new GameActions.AddTokenAction(propertyFactory, 'ward'),
+    addWarrantCounter: (propertyFactory) =>
+        new GameActions.AddTokenAction(propertyFactory, 'warrant'),
     archive: (propertyFactory) => new GameActions.ArchiveAction(propertyFactory),
     attach: (propertyFactory) => new GameActions.AttachAction(propertyFactory), // upgrade
     capture: (propertyFactory) => new GameActions.CaptureAction(propertyFactory),
-    cardLastingEffect: (propertyFactory) => new GameActions.LastingEffectCardAction(propertyFactory), // duration = 'untilEndOfConflict', effect, targetLocation, condition, until
-    clearGrowthTokens: (propertyFactory) => new GameActions.RemoveTokenAction(propertyFactory, 'growth'),
-    clearGloryCounters: (propertyFactory) => new GameActions.RemoveTokenAction(propertyFactory, 'glory'),
-    changeActiveHouse: (propertyFactory) => new GameActions.ChangeActiveHouseAction(propertyFactory),
+    cardLastingEffect: (propertyFactory) =>
+        new GameActions.LastingEffectCardAction(propertyFactory), // duration = 'untilEndOfConflict', effect, targetLocation, condition, until
+    clearGrowthTokens: (propertyFactory) =>
+        new GameActions.RemoveTokenAction(propertyFactory, 'growth'),
+    clearGloryCounters: (propertyFactory) =>
+        new GameActions.RemoveTokenAction(propertyFactory, 'glory'),
+    changeActiveHouse: (propertyFactory) =>
+        new GameActions.ChangeActiveHouseAction(propertyFactory),
     dealDamage: (propertyFactory) => new GameActions.DealDamageAction(propertyFactory),
     delayedEffect: (propertyFactory) => new GameActions.DelayedEffectAction(propertyFactory), // when, message, gameAction, handler
     discard: (propertyFactory) => new GameActions.DiscardCardAction(propertyFactory),
@@ -29,6 +39,7 @@ const Actions = {
     heal: (propertyFactory) => new GameActions.HealAction(propertyFactory),
     moveCard: (propertyFactory) => new GameActions.MoveCardAction(propertyFactory), // destination, switch = false, shuffle = false
     moveOnBattleline: (propertyFactory) => new GameActions.MoveOnBattlelineAction(propertyFactory),
+    moveToBottom: (propertyFactory) => new GameActions.MoveToBottomAction(propertyFactory),
     moveToFlank: (propertyFactory) => new GameActions.MoveToFlankAction(propertyFactory),
     placeAmber: (propertyFactory) => new GameActions.AddTokenAction(propertyFactory, 'amber'), // amount = 1
     placeUnder: (propertyFactory) => new GameActions.PlaceUnderAction(propertyFactory), // parent
@@ -37,15 +48,23 @@ const Actions = {
     putIntoPlay: (propertyFactory) => new GameActions.PutIntoPlayAction(propertyFactory),
     ready: (propertyFactory) => new GameActions.ReadyAction(propertyFactory),
     reap: (propertyFactory) => new GameActions.ReapGameAction(propertyFactory),
-    rearrangeBattleline: (propertyFactory) => new GameActions.RearrangeBattlelineAction(propertyFactory),
+    rearrangeBattleline: (propertyFactory) =>
+        new GameActions.RearrangeBattlelineAction(propertyFactory),
     reduceArmor: (propertyFactory) => new GameActions.ReduceArmorAction(propertyFactory),
     removeAmber: (propertyFactory) => new GameActions.RemoveTokenAction(propertyFactory, 'amber'),
     removeDamage: (propertyFactory) => new GameActions.RemoveTokenAction(propertyFactory, 'damage'),
     removePowerCounter: (propertyFactory) => new GameActions.RemoveTokenAction(propertyFactory),
+    removeSchemeCounter: (propertyFactory) =>
+        new GameActions.RemoveTokenAction(propertyFactory, 'scheme'),
     removeStun: (propertyFactory) => new GameActions.RemoveStunAction(propertyFactory),
     removeWard: (propertyFactory) => new GameActions.RemoveWardAction(propertyFactory),
-    removeWardToken: (propertyFactory) => new GameActions.RemoveTokenAction(propertyFactory, 'ward'),
+    removeWardToken: (propertyFactory) =>
+        new GameActions.RemoveTokenAction(propertyFactory, 'ward'),
+    removeWarrantCounter: (propertyFactory) =>
+        new GameActions.RemoveTokenAction(propertyFactory, 'warrant'),
     resolveAbility: (propertyFactory) => new GameActions.ResolveAbilityAction(propertyFactory), // ability
+    resolveBonusIcons: (propertyFactory) =>
+        new GameActions.ResolveBonusIconsAction(propertyFactory),
     resolveFight: (propertyFactory) => new GameActions.ResolveFightAction(propertyFactory), // this shouldn't normally be needed
     returnAmber: (propertyFactory) => new GameActions.ReturnAmberAction(propertyFactory),
     returnToDeck: (propertyFactory) => new GameActions.ReturnToDeckAction(propertyFactory), // bottom = false
@@ -60,18 +79,23 @@ const Actions = {
     archiveAtRandom: (propertyFactory) => new GameActions.RandomArchiveAction(propertyFactory), // amount = 1
     chosenDiscard: (propertyFactory) => new GameActions.ChosenDiscardAction(propertyFactory), // amount = 1
     discardAtRandom: (propertyFactory) => new GameActions.RandomDiscardAction(propertyFactory), // amount = 1
+    discardTopOfDeck: (propertyFactory) => new GameActions.DiscardTopOfDeckAction(propertyFactory), // amount = 1
     purgeAtRandom: (propertyFactory) => new GameActions.RandomPurgeAction(propertyFactory), // amount = 1
     draw: (propertyFactory) => new GameActions.DrawAction(propertyFactory), // amount = 1
     forgeKey: (propertyFactory) => new GameActions.ForgeAction(propertyFactory), // modifier = 0
-    forRemainderOfTurn: (propertyFactory) => new GameActions.LastingEffectAction(propertyFactory, 1),
+    forRemainderOfTurn: (propertyFactory) =>
+        new GameActions.LastingEffectAction(propertyFactory, 1),
     untilNextTurn: (propertyFactory) => new GameActions.LastingEffectAction(propertyFactory, 2),
-    untilEndOfMyNextTurn: (propertyFactory) => new GameActions.LastingEffectAction(propertyFactory, 3),
+    untilEndOfMyNextTurn: (propertyFactory) =>
+        new GameActions.LastingEffectAction(propertyFactory, 3),
     gainAmber: (propertyFactory) => new GameActions.ModifyAmberAction(propertyFactory), // amount = 1
     gainChains: (propertyFactory) => new GameActions.ModifyChainsActions(propertyFactory), // amount = 1
     lastingEffect: (propertyFactory) => new GameActions.LastingEffectAction(propertyFactory),
     loseAmber: (propertyFactory) => new GameActions.LoseAmberAction(propertyFactory),
     rearrangeCards: (propertFactory) => new GameActions.RearrangeCardsAction(propertFactory),
     search: (propertyFactory) => new GameActions.SearchAction(propertyFactory), // name
+    shuffleDeck: (propertyFactory) => new GameActions.ShuffleDeckAction(propertyFactory), // name
+    mulligan: (propertyFactory) => new GameActions.MulliganAction(propertyFactory), // name
     steal: (propertyFactory) => new GameActions.StealAction(propertyFactory), // amount = 1
     transferAmber: (propertyFactory) => new GameActions.TransferAmberAction(propertyFactory), // amount = 1
     unforgeKey: (propertyFactory) => new GameActions.UnforgeAction(propertyFactory),

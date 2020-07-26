@@ -1,16 +1,31 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import { withTranslation } from 'react-i18next';
+
 class OptionsSelect extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            selectedOption: undefined
+            selectedOption: null,
+            prevOptions: null
         };
 
         this.onChange = this.onChange.bind(this);
         this.onDoneClicked = this.onDoneClicked.bind(this);
+    }
+
+    static getDerivedStateFromProps(props, state) {
+        if (props.options !== state.prevOptions) {
+            return {
+                selectedOption:
+                    props.options && props.options.length > 0 ? '' + props.options[0].arg : -1,
+                prevOptions: props.options
+            };
+        }
+
+        return null;
     }
 
     onChange(event) {
@@ -20,7 +35,7 @@ class OptionsSelect extends React.Component {
     onDoneClicked(event) {
         event.preventDefault();
 
-        if(this.props.onOptionSelected) {
+        if (this.props.onOptionSelected) {
             this.props.onOptionSelected(this.state.selectedOption);
         }
     }
@@ -28,18 +43,34 @@ class OptionsSelect extends React.Component {
     render() {
         return (
             <div>
-                <select className='form-control' onChange={ this.onChange }>
-                    { this.props.options.map(option => <option key={ option.value }>{ option.text }</option>) }
+                <select className='form-control' onChange={this.onChange}>
+                    {this.props.options.map((option) => (
+                        <option
+                            key={option.value}
+                            selected={this.state.selectedOption === '' + option.arg}
+                            value={option.arg}
+                        >
+                            {option.text}
+                        </option>
+                    ))}
                 </select>
-                <button className='btn btn-default prompt-button btn-stretch option-button' onClick={ this.onDoneClicked }>Done</button>
-            </div>);
+                <button
+                    className='btn btn-default prompt-button btn-stretch option-button'
+                    onClick={this.onDoneClicked}
+                >
+                    {this.props.t('Done')}
+                </button>
+            </div>
+        );
     }
 }
 
 OptionsSelect.displayName = 'OptionsSelect';
 OptionsSelect.propTypes = {
+    i18n: PropTypes.object,
     onOptionSelected: PropTypes.func,
-    options: PropTypes.array
+    options: PropTypes.array,
+    t: PropTypes.func
 };
 
-export default OptionsSelect;
+export default withTranslation()(OptionsSelect);

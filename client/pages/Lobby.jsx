@@ -2,6 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { toastr } from 'react-redux-toastr';
+import { withTranslation, Trans } from 'react-i18next';
+import { Col } from 'react-bootstrap';
 
 import News from '../Components/News/News';
 import AlertPanel from '../Components/Site/AlertPanel';
@@ -10,15 +12,14 @@ import Typeahead from '../Components/Form/Typeahead';
 import SideBar from '../Components/Lobby/SideBar';
 import UserList from '../Components/Lobby/UserList';
 import LobbyChat from '../Components/Lobby/LobbyChat';
-import { getMessageWithLinks } from '../util';
 
-import * as actions from '../actions';
+import * as actions from '../redux/actions';
 
-import { withTranslation, Trans } from 'react-i18next';
+import './Lobby.scss';
 
 class Lobby extends React.Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
 
         this.onChange = this.onChange.bind(this);
         this.onKeyPress = this.onKeyPress.bind(this);
@@ -36,13 +37,17 @@ class Lobby extends React.Component {
         this.checkChatError(this.props);
     }
 
-    componentWillReceiveProps(props) {
+    // eslint-disable-next-line camelcase
+    UNSAFE_componentWillReceiveProps(props) {
         this.checkChatError(props);
     }
 
     checkChatError(props) {
-        if(props.lobbyError) {
-            toastr.error('New users are limited from chatting in the lobby, try again later');
+        if (props.lobbyError) {
+            toastr.error(
+                'Error',
+                'New users are limited from chatting in the lobby, try again later'
+            );
 
             setTimeout(() => {
                 this.props.clearChatStatus();
@@ -51,7 +56,7 @@ class Lobby extends React.Component {
     }
 
     sendMessage() {
-        if(this.state.message === '') {
+        if (this.state.message === '') {
             return;
         }
 
@@ -61,7 +66,7 @@ class Lobby extends React.Component {
     }
 
     onKeyPress(event) {
-        if(event.key === 'Enter') {
+        if (event.key === 'Enter') {
             this.sendMessage();
 
             this.message.clear();
@@ -87,55 +92,89 @@ class Lobby extends React.Component {
     render() {
         let t = this.props.t;
         let isLoggedIn = !!this.props.user;
-        let placeholder = isLoggedIn ? 'Enter a message...' : 'You must be logged in to send lobby chat messages';
+        let placeholder = isLoggedIn
+            ? 'Enter a message...'
+            : 'You must be logged in to send lobby chat messages';
 
         return (
             <div className='flex-container'>
                 <SideBar>
-                    <UserList users={ this.props.users } />
+                    <UserList users={this.props.users} />
                 </SideBar>
-                <div className='col-sm-offset-1 col-sm-10'>
-                    <div className='main-header'>
-                        <span className='text-center'><h1>Keyforge</h1></span>
-                    </div>
+                <div>
+                    <Col sm={{ span: 10, offset: 1 }}>
+                        <div className='main-header' />
+                    </Col>
                 </div>
-                { this.props.motd && this.props.motd.message &&
-                    <div className='col-sm-offset-1 col-sm-10 banner'>
-                        <AlertPanel type={ this.props.motd.motdType }>
-                            { getMessageWithLinks(this.props.motd.message) }
-                        </AlertPanel>
+                {this.props.motd?.message && (
+                    <div>
+                        <Col sm={{ span: 10, offset: 1 }} className='banner'>
+                            <AlertPanel
+                                type={this.props.motd.motdType}
+                                message={this.props.motd.message}
+                            ></AlertPanel>
+                        </Col>
                     </div>
-                }
-                { this.props.bannerNotice ? <div className='col-sm-offset-1 col-sm-10 announcement'>
-                    <AlertPanel message={ this.props.bannerNotice } type='error' />
-                </div> : null }
-                <div className='col-sm-offset-1 col-sm-10'>
-                    <Panel title={ t('Latest site news') }>
-                        { this.props.loading ? <div><Trans>News loading...</Trans></div> : null }
-                        <News news={ this.props.news } />
-                    </Panel>
+                )}
+                {this.props.bannerNotice ? (
+                    <div>
+                        <Col sm={{ span: 10, offset: 1 }} className='annoucement'>
+                            <AlertPanel message={this.props.bannerNotice} type='error' />
+                        </Col>
+                    </div>
+                ) : null}
+                <div>
+                    <Col sm={{ span: 10, offset: 1 }}>
+                        <Panel title={t('Latest site news')}>
+                            {this.props.loading ? (
+                                <div>
+                                    <Trans>News loading...</Trans>
+                                </div>
+                            ) : null}
+                            <News news={this.props.news} />
+                        </Panel>
+                    </Col>
                 </div>
-                <div className='col-sm-offset-1 col-sm-10 chat-container'>
-                    <Panel title={ t('Lobby Chat ({{users}}) online', { users: this.props.users.length }) }>
+                <Col sm={{ span: 10, offset: 1 }} className='chat-container'>
+                    <Panel
+                        title={t('Lobby Chat ({{users}}) online', {
+                            users: this.props.users.length
+                        })}
+                    >
                         <div>
-                            <LobbyChat messages={ this.props.messages }
-                                isModerator={ this.props.user && this.props.user.permissions.canModerateChat }
-                                onRemoveMessageClick={ this.onRemoveMessageClick } />
+                            <LobbyChat
+                                messages={this.props.messages}
+                                isModerator={this.props.user?.permissions?.canModerateChat}
+                                onRemoveMessageClick={this.onRemoveMessageClick}
+                            />
                         </div>
                     </Panel>
-                    <form className='form form-hozitontal chat-box-container' onSubmit={ event => this.onSendClick(event) }>
+                    <form
+                        className='form form-hozitontal chat-box-container'
+                        onSubmit={(event) => this.onSendClick(event)}
+                    >
                         <div className='form-group'>
                             <div className='chat-box'>
-                                <Typeahead disabled={ !isLoggedIn } ref={ m => this.message = m } value={ this.state.message } placeholder={ t(placeholder) }
-                                    labelKey={ 'name' } onKeyDown={ this.onKeyPress }
-                                    options={ this.props.users } onInputChange={ this.onChange } autoFocus
-                                    dropup emptyLabel={ '' }
-                                    minLength={ 2 } />
+                                <Typeahead
+                                    disabled={!isLoggedIn}
+                                    ref={(m) => (this.message = m)}
+                                    value={this.state.message}
+                                    placeholder={t(placeholder)}
+                                    labelKey={'name'}
+                                    onKeyDown={this.onKeyPress}
+                                    options={this.props.users}
+                                    onInputChange={this.onChange}
+                                    autoFocus
+                                    dropup
+                                    emptyLabel={''}
+                                    minLength={2}
+                                />
                             </div>
                         </div>
                     </form>
-                </div>
-            </div>);
+                </Col>
+            </div>
+        );
     }
 }
 
@@ -143,7 +182,6 @@ Lobby.displayName = 'Lobby';
 Lobby.propTypes = {
     bannerNotice: PropTypes.string,
     clearChatStatus: PropTypes.func,
-    fetchNews: PropTypes.func,
     i18n: PropTypes.object,
     loadNews: PropTypes.func,
     loading: PropTypes.bool,
